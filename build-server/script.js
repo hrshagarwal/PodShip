@@ -14,6 +14,12 @@ const s3Client = new S3Client({
 
 const PROJECT_ID = process.env.PROJECT_ID
 
+console.log('PROJECT_ID:', JSON.stringify(PROJECT_ID))
+if (!PROJECT_ID) {
+    console.error('PROJECT_ID is not set, aborting')
+    process.exit(1)
+}
+
 async function init() {
     console.log('Executing script.js')
     const outDirPath = path.join(__dirname, 'output')
@@ -48,7 +54,7 @@ async function init() {
 
             await s3Client.send(command)
 
-            console.log('uploaded', filePath)
+            console.log('uploaded', command.input.Key)
         }
     })
 }
