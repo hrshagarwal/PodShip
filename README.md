@@ -6,35 +6,33 @@ A self-hosted, Vercel-style deployment platform. Give it a GitHub repo URL and i
 
 ```mermaid
 flowchart LR
-    User([User / Browser])
+    User(["User / Browser"])
 
-    subgraph Local["Servers"]
+    subgraph Servers["Servers"]
         API["API Server<br/>Express :9000"]
         Socket["Socket Server<br/>Socket.IO :9001"]
         Proxy["Reverse Proxy<br/>http-proxy :8000"]
     end
 
-    subgraph AWS["AWS (ap-south-1)"]
-        ECR[("ECR<br/>build-server image")]
-        subgraph ECS["ECS Cluster (Fargate)"]
-            Builder["Build Container<br/>clone → install → build → upload"]
-        end
-        S3[("S3 Bucket<br/>__outputs/#lt;slug#gt;/")]
+    subgraph AWS["AWS · ap-south-1"]
+        ECR[("ECR<br/>build image")]
+        Builder["Build Container<br/>ECS Fargate"]
+        S3[("S3<br/>__outputs/#lt;slug#gt;/")]
     end
 
-    GitHub[(GitHub Repo)]
+    GitHub[("GitHub")]
     Redis[("Redis<br/>Pub/Sub")]
 
-    User -- "POST /project { gitURL }" --> API
-    API -- "RunTask + env overrides" --> Builder
-    ECR -. "image pull" .-> Builder
-    Builder -- "git clone" --> GitHub
-    Builder -- "upload dist/" --> S3
-    Builder -- "PUBLISH logs:#lt;slug#gt;" --> Redis
-    Redis -- "PSUBSCRIBE logs:*" --> Socket
-    Socket -- "live logs (WebSocket)" --> User
-    User -- "#lt;slug#gt;.localhost:8000" --> Proxy
-    Proxy -- "stream from __outputs/#lt;slug#gt;/" --> S3
+    User -->|"1 · POST /project"| API
+    API -->|"2 · RunTask"| Builder
+    ECR -.->|"pull"| Builder
+    GitHub -->|"3 · clone"| Builder
+    Builder -->|"4 · upload dist/"| S3
+    Builder -->|"publish logs"| Redis
+    Redis -->|"psubscribe"| Socket
+    Socket -->|"live logs"| User
+    User -->|"5 · #lt;slug#gt;.localhost:8000"| Proxy
+    Proxy -->|"stream"| S3
 ```
 
 ### Deploy flow
@@ -60,7 +58,8 @@ sequenceDiagram
     E->>R: publish "Done"
     U->>P: GET #lt;slug#gt;.localhost:8000
     P->>S: proxy to __outputs/#lt;slug#gt;/index.html
-    S-->>U: static site (streamed)
+    S-->>P: file stream
+    P-->>U: static site (streamed)
 ```
 
 ## Components
