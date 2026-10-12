@@ -75,35 +75,6 @@ h2 {
     font-size: 17px;
 }
 
-.system {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    font-family: var(--mono);
-    font-size: 12.5px;
-}
-
-.sys-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--line);
-}
-
-.dot-ok {
-    background: var(--green);
-}
-
-.dot-bad {
-    background: var(--red);
-}
-
 /* layout */
 
 .layout {

@@ -20,15 +20,6 @@ let current = null
 
 const socket = io(window.SOCKET_URL)
 
-socket.on('connect', () => setSocketState(true))
-socket.on('disconnect', () => setSocketState(false))
-socket.on('connect_error', () => setSocketState(false))
-
-function setSocketState(connected) {
-    $('socket-dot').className = connected ? 'dot dot-ok' : 'dot dot-bad'
-    $('socket-label').textContent = connected ? 'socket :9001' : 'socket :9001 offline'
-}
-
 socket.on('message', (message) => {
     if (message.startsWith('Joined')) {
         $('channel').textContent = message.replace('Joined ', '')
