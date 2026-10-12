@@ -6,33 +6,34 @@ A self-hosted, Vercel-style deployment platform. Give it a GitHub repo URL and i
 
 ```mermaid
 flowchart LR
-    User(["User / Browser"])
-
-    subgraph Servers["Servers"]
-        API["API Server<br/>Express :9000"]
-        Socket["Socket Server<br/>Socket.IO :9001"]
-        Proxy["Reverse Proxy<br/>http-proxy :8000"]
-    end
-
-    subgraph AWS["AWS · ap-south-1"]
-        ECR[("ECR<br/>build image")]
-        Builder["Build Container<br/>ECS Fargate"]
-        S3[("S3<br/>__outputs/#lt;slug#gt;/")]
-    end
+    Client(["Client"]) -->|"POST /project"| API["API Server<br/>:9000"]
 
     GitHub[("GitHub")]
-    Redis[("Redis<br/>Pub/Sub")]
 
-    User -->|"1 · POST /project"| API
-    API -->|"2 · RunTask"| Builder
-    ECR -.->|"pull"| Builder
-    GitHub -->|"3 · clone"| Builder
-    Builder -->|"4 · upload dist/"| S3
-    Builder -->|"publish logs"| Redis
-    Redis -->|"psubscribe"| Socket
-    Socket -->|"live logs"| User
-    User -->|"5 · #lt;slug#gt;.localhost:8000"| Proxy
-    Proxy -->|"stream"| S3
+    subgraph ECS["AWS ECS · Fargate (image from AWS ECR)"]
+        B1["build-server"]
+        B2["build-server"]
+        B3["build-server"]
+    end
+
+    API --> B1
+    API -->|"git url"| B2
+    API --> B3
+    GitHub -.->|"git clone"| ECS
+
+    B1 -->|"logs"| Redis[("Redis<br/>Pub/Sub")]
+    B2 --> Redis
+    B3 --> Redis
+    B1 --> S3[("S3<br/>__outputs/{project_id}/")]
+    B2 -->|"dist/ (index.html, assets/)"| S3
+    B3 --> S3
+
+    Redis --> Socket["Socket Server<br/>:9001"]
+    Socket --> User(["User"])
+
+    A1(["a1.localhost:8000"]) --> Proxy["Reverse Proxy<br/>s3-reverse-proxy :8000"]
+    P1(["p1.localhost:8000"]) --> Proxy
+    Proxy -->|"__outputs/{project_id}/"| S3
 ```
 
 ### Deploy flow
