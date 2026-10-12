@@ -36,10 +36,11 @@ const config = {
 app.use(express.json())
 
 app.post('/project', async (req, res) => {
-    const { gitURL } = req.body
+    const { gitURL, slug } = req.body
     if (!gitURL) return res.status(400).json({ error: 'gitURL is required' })
+    if (slug && !/^[a-z0-9-]+$/.test(slug)) return res.status(400).json({ error: 'slug can only contain a-z, 0-9 and -' })
 
-    const projectSlug = generateSlug()
+    const projectSlug = slug ? slug : generateSlug()
 
     // Spin the container
     const command = new RunTaskCommand({
