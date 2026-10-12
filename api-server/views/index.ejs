@@ -4,39 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PodShip</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <main class="page">
-        <header class="header">
-            <h1>PodShip</h1>
-            <p>Deploy a frontend from GitHub in seconds.</p>
-        </header>
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-mark"></span>
+            <span class="brand-name">podship</span>
+        </div>
+        <div class="system">
+            <span class="sys-item"><span class="dot dot-ok"></span>api :9000</span>
+            <span class="sys-item"><span id="socket-dot" class="dot"></span><span id="socket-label">socket :9001</span></span>
+            <span class="sys-item muted">ecs fargate · ap-south-1</span>
+        </div>
+    </header>
 
-        <form id="deploy-form" class="card">
-            <label for="gitURL">GitHub repository URL</label>
-            <input id="gitURL" type="url" placeholder="https://github.com/user/repo" autocomplete="off" required>
+    <main class="layout">
+        <section class="left">
+            <form id="deploy-form" class="panel">
+                <h2>New deployment</h2>
 
-            <label for="slug">Project name <span class="optional">(optional)</span></label>
-            <div class="slug-input">
-                <input id="slug" type="text" placeholder="random if empty" autocomplete="off" pattern="[a-z0-9-]*"
-                    title="Only lowercase letters, numbers and hyphens">
-                <span class="suffix">.localhost:8000</span>
-            </div>
+                <label for="gitURL">Repository</label>
+                <input id="gitURL" type="url" placeholder="https://github.com/user/repo" autocomplete="off" required>
 
-            <button id="deploy-btn" type="submit">Deploy</button>
-            <span id="error" class="hint error"></span>
-        </form>
-
-        <section id="deployment" class="card hidden">
-            <div class="deploy-header">
-                <div>
-                    <span id="status" class="status"></span>
-                    <span id="project" class="project"></span>
+                <label for="slug">Subdomain <span class="muted">— leave empty for a random one</span></label>
+                <div class="slug-input">
+                    <input id="slug" type="text" placeholder="my-site" autocomplete="off" pattern="[a-z0-9-]*"
+                        title="Only lowercase letters, numbers and hyphens">
+                    <span class="suffix">.localhost:8000</span>
                 </div>
-                <a id="visit" class="visit hidden" target="_blank" rel="noreferrer">Visit site ↗</a>
-            </div>
-            <div id="logs" class="logs"></div>
+
+                <button id="deploy-btn" type="submit">Deploy</button>
+                <p id="error" class="error"></p>
+            </form>
+
+            <section class="panel">
+                <h2>Recent</h2>
+                <ul id="recent" class="recent">
+                    <li class="muted">Nothing deployed from this browser yet.</li>
+                </ul>
+            </section>
+        </section>
+
+        <section class="right">
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Pipeline</h2>
+                    <span id="elapsed" class="mono muted">00:00</span>
+                </div>
+
+                <ol id="pipeline" class="pipeline">
+                    <li data-stage="queued"><span class="step-name">Queued</span><span class="step-sub">API → ECS RunTask</span></li>
+                    <li data-stage="container"><span class="step-name">Container</span><span class="step-sub">Fargate pulls image</span></li>
+                    <li data-stage="install"><span class="step-name">Install</span><span class="step-sub">git clone + npm install</span></li>
+                    <li data-stage="build"><span class="step-name">Build</span><span class="step-sub">npm run build</span></li>
+                    <li data-stage="upload"><span class="step-name">Upload</span><span class="step-sub">dist/ → S3</span></li>
+                    <li data-stage="live"><span class="step-name">Live</span><span class="step-sub">reverse proxy :8000</span></li>
+                </ol>
+
+                <dl id="details" class="details">
+                    <div><dt>project</dt><dd id="d-project">—</dd></div>
+                    <div><dt>s3 path</dt><dd id="d-s3">—</dd></div>
+                    <div><dt>files uploaded</dt><dd id="d-files">0</dd></div>
+                    <div><dt>url</dt><dd id="d-url">—</dd></div>
+                </dl>
+            </section>
+
+            <section class="panel terminal-panel">
+                <div class="panel-head">
+                    <h2>Build logs</h2>
+                    <span id="channel" class="mono muted">not subscribed</span>
+                </div>
+                <div id="logs" class="terminal">
+                    <div class="log-line muted">$ waiting for a deployment</div>
+                </div>
+            </section>
         </section>
     </main>
 
