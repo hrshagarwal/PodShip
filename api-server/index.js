@@ -1,4 +1,5 @@
 const express = require('express')
+const path = require('path')
 const { generateSlug } = require('random-word-slugs')
 const { ECSClient, RunTaskCommand } = require('@aws-sdk/client-ecs')
 const { Server } = require('socket.io')
@@ -33,7 +34,14 @@ const config = {
     TASK: process.env.ECS_TASK_DEFINITION
 }
 
+app.set('view engine', 'ejs')
+app.set('views', path.join(__dirname, 'views'))
+app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.json())
+
+app.get('/', (req, res) => {
+    res.render('index', { socketUrl: 'http://localhost:9001' })
+})
 
 app.post('/project', async (req, res) => {
     const { gitURL, slug } = req.body
