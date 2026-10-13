@@ -4,6 +4,11 @@ A self-hosted, Vercel-style deployment platform. Give it a GitHub repo URL and i
 
 ## Architecture
 
+![PodShip architecture](docs/architecture.png)
+
+<details>
+<summary>Same architecture as a Mermaid diagram</summary>
+
 ```mermaid
 flowchart LR
     Client(["Client"]) -->|"POST /project"| API["API Server<br/>:9000"]
@@ -35,6 +40,8 @@ flowchart LR
     P1(["p1.localhost:8000"]) --> Proxy
     Proxy -->|"__outputs/{project_id}/"| S3
 ```
+
+</details>
 
 ### Deploy flow
 
